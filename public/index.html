@@ -208,6 +208,10 @@ dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .ro .check,.ro .status,.ro .tick{pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.row,.card{transition:background .15s,border-color .15s}}
 
+.chip.zone[aria-pressed="false"]{border-color:color-mix(in srgb,var(--link) 40%,var(--rule));color:var(--link)}
+.zonetag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--link);background:var(--link-soft);border-radius:4px;padding:2px 7px;margin-bottom:-2px}
+.areafield{margin-top:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.areafield input{border:1px solid var(--rule);background:var(--paper);border-radius:7px;padding:6px 10px;width:200px;max-width:100%}
 /* ---- cleanup layer ---- */
 .wrap{max-width:1160px}
 .brand b{font-size:17px}
@@ -366,15 +370,15 @@ const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-li
 
 const S = { items: new Map(), works: new Map(), loadedI:false, loadedW:false, db:null, user:null, me:null, ro:false,
   open: new Set(), drafts: {}, route: "gear",
-  f: { q:"", st: new Set(), src:"", showCut:true, cat: new Set(), kind: new Set(), work:"" } };
+  f: { q:"", st: new Set(), src:"", showCut:true, cat: new Set(), kind: new Set(), work:"", zone: new Set() } };
 
 const ls = {
   get(k,d){ try{ const v = localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 const saved = ls.get("www-inv-filters", null);
-if (saved){ S.f.q = saved.q||""; S.f.st = new Set(saved.st||[]); S.f.src = saved.src||""; S.f.showCut = saved.showCut!==false; S.f.cat = new Set(saved.cat||[]); S.f.kind = new Set(saved.kind||[]); S.f.work = saved.work||""; }
-const saveF = () => ls.set("www-inv-filters", {q:S.f.q, st:[...S.f.st], src:S.f.src, showCut:S.f.showCut, cat:[...S.f.cat], kind:[...S.f.kind], work:S.f.work});
+if (saved){ S.f.q = saved.q||""; S.f.st = new Set(saved.st||[]); S.f.src = saved.src||""; S.f.showCut = saved.showCut!==false; S.f.cat = new Set(saved.cat||[]); S.f.kind = new Set(saved.kind||[]); S.f.work = saved.work||""; S.f.zone = new Set(saved.zone||[]); }
+const saveF = () => ls.set("www-inv-filters", {q:S.f.q, st:[...S.f.st], src:S.f.src, showCut:S.f.showCut, cat:[...S.f.cat], kind:[...S.f.kind], work:S.f.work, zone:[...S.f.zone]});
 
 const $ = (s, r=document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -415,6 +419,9 @@ function editField(id, field, value, label){
     const show = v => field==="source" ? SRC[v] : field==="cat" ? CAT[v] : field==="work" ? ((S.works.get(v)||{}).title||v) : (v===""||v==null?"—":v);
     return { patch:{[field]:value}, what:`${label}: ${show(it[field])} → ${show(value)}` }; });
 }
+function setZone(id, zone){
+  patch("works", id, () => { const w=S.works.get(id); if(!w||(w.zone||"")===zone) return null; toast(zone?`Area set to ${zone}`:"Area cleared"); return { patch:{zone} }; });
+}
 function addNote(col, id, text){
   queue(col+"/"+id, () => rpc("wwwinv_add_note", { p_table: col, p_id: id, p_text: text, p_by: who() }));
 }
@@ -431,6 +438,7 @@ function matches(it){
   if (S.f.st.size && (it.cut || !S.f.st.has(it.status))) return false;
   if (S.f.src && it.source !== S.f.src) return false;
   if (S.f.work && it.work !== S.f.work) return false;
+  if (S.f.zone.size && !S.f.zone.has(workOf(it).zone||"")) return false;
   if (S.f.cat.size && !S.f.cat.has(it.cat)) return false;
   if (S.f.kind.size && !S.f.kind.has(it.kind||"Other")) return false;
   if (S.f.q){
@@ -487,13 +495,22 @@ function renderFilters(){
   <div class="facets"><span class="flabel">Status</span>
     ${STATUSES.map(([k,l])=>`<button type="button" class="chip" data-stf="${k}" aria-pressed="${S.f.st.has(k)}"><span class="dot" style="background:var(--${k})"></span>${l}<span class="c">${c[k]}</span></button>`).join("")}
     ${S.f.st.size?`<button type="button" class="linkbtn" id="stclear">Clear</button>`:""}
-  </div>${gearFilters()}`;
+  </div>${zoneFilters()}${gearFilters()}`;
 }
 
 function artistSelect(){
   const ws = worksArr().slice().sort((a,b)=>a.artist.localeCompare(b.artist));
   if (S.f.work && !S.works.has(S.f.work)) S.f.work = "";
   return `<select class="sel artist-sel ${S.f.work?"on":""}" id="workf" aria-label="Filter by artist"><option value="">All artists</option>${ws.map(w=>`<option value="${w.id}" ${S.f.work===w.id?"selected":""}>${esc(w.artist)} — ${esc(w.title)}</option>`).join("")}</select>`;
+}
+
+function zoneFilters(){
+  const ws = worksArr().filter(w=>w.id!=="w99");
+  const m = {}; ws.forEach(w=>{ const z=w.zone||""; m[z]=(m[z]||0)+1; });
+  const zones = Object.keys(m).filter(Boolean).sort();
+  if (!zones.length) return "";
+  if (m[""]) zones.push("");
+  return `<div class="facets"><span class="flabel">Area</span>${zones.map(z=>`<button type="button" class="chip ${z?"zone":""}" data-zonef="${esc(z)}" aria-pressed="${S.f.zone.has(z)}">${z?esc(z):"No area"}<span class="c">${m[z]} ${m[z]===1?"artist":"artists"}</span></button>`).join("")}${S.f.zone.size?`<button type="button" class="linkbtn" id="zoneclear">Clear</button>`:""}</div>`;
 }
 
 function gearFilters(){
@@ -623,19 +640,19 @@ function renderArtists(){
   const q = S.f.q.toLowerCase();
   const gearOn = S.f.cat.size || S.f.kind.size;
   const gearHit = i => (!S.f.cat.size || S.f.cat.has(i.cat)) && (!S.f.kind.size || S.f.kind.has(i.kind||"Other")) && !i.cut;
-  const cards = worksArr().filter(w=>(!S.f.work || w.id===S.f.work) && (!q || (w.title+" "+w.artist).toLowerCase().includes(q)) && (!gearOn || all.some(i=>i.work===w.id && gearHit(i)))).map(w=>{
+  const cards = worksArr().filter(w=>(!S.f.work || w.id===S.f.work) && (!S.f.zone.size || S.f.zone.has(w.zone||"")) && (!q || (w.title+" "+w.artist).toLowerCase().includes(q)) && (!gearOn || all.some(i=>i.work===w.id && gearHit(i)))).map(w=>{
     const its = all.filter(i=>i.work===w.id); const live = its.filter(i=>!i.cut); const c = statusCounts(its);
     const gear = live.filter(i=> gearOn ? gearHit(i) : (i.cat==="display"||i.cat==="computer")).map(i=>`<span>${(Number(i.qty)||1)>1?i.qty+"× ":""}${esc(i.kind||i.name)}</span>`).join("");
     const openNotes = [...its, w].reduce((s,d)=>s+(d.notes||[]).filter(n=>!n.done).length,0);
     const state = c.open ? `<b class="warn">${c.open} need a source</b>` : c.installed===live.length && live.length ? `<b class="ok">All installed</b>` : `<span>${c.onsite+c.installed}/${live.length} in gallery</span>`;
     return `<a class="card" href="#/w/${esc(w.id)}">
-      <div class="t">${esc(w.title)}</div><div class="a">${esc(w.artist)}</div>
+      ${w.zone?`<span class="zonetag">${esc(w.zone)}</span>`:""}<div class="t">${esc(w.title)}</div><div class="a">${esc(w.artist)}</div>
       <div class="gear">${gear || '<span style="border:0;background:none;color:var(--faint)">No screen or computer</span>'}</div>
       ${miniBar(its)}
       <div class="foot">${state}<span class="num">${live.length} items${openNotes?` · ✎ ${openNotes}`:""}</span></div>
     </a>`;
   }).join("");
-  return `<div class="filters"><input class="search" id="q" type="search" placeholder="Find an artwork or artist" value="${esc(S.f.q)}" aria-label="Search">${artistSelect()}</div>${gearFilters()}
+  return `<div class="filters"><input class="search" id="q" type="search" placeholder="Find an artwork or artist" value="${esc(S.f.q)}" aria-label="Search">${artistSelect()}</div>${zoneFilters()}${gearFilters()}
     <div class="grid">${cards || '<div class="empty">No artworks match.</div>'}</div>`;
 }
 
@@ -654,6 +671,7 @@ function renderWork(id){
         ${w.budget!=null?`<div><b>${money(w.budget)}</b>budget</div>`:""}
       </div>
     </div>
+    <div class="areafield"><label for="zone-edit">Area</label><input id="zone-edit" data-draft data-zone-for="${esc(id)}" list="zone-list" value="${esc(w.zone||"")}" placeholder="e.g. LAN Party" ${S.ro?"disabled":""}><datalist id="zone-list">${[...new Set(worksArr().map(x=>x.zone).filter(Boolean))].sort().map(z=>`<option value="${esc(z)}">`).join("")}</datalist></div>
     <div style="margin-top:16px">${miniBar(its)}</div>
     <div style="margin-top:14px"><button class="btn" type="button" id="add-here" data-work="${esc(id)}">+ Add item to this artwork</button></div>
     ${secs || '<div class="empty">No items yet.</div>'}
@@ -678,6 +696,9 @@ document.addEventListener("click", e => {
   const kf = t.closest("[data-kindf]");
   if (kf){ const k=kf.dataset.kindf; S.f.kind.has(k)?S.f.kind.delete(k):S.f.kind.add(k); saveF(); render(); return; }
   if (t.closest("#workclear")){ S.f.work=""; saveF(); render(); return; }
+  const zf = t.closest("[data-zonef]");
+  if (zf){ const k=zf.dataset.zonef; S.f.zone.has(k)?S.f.zone.delete(k):S.f.zone.add(k); saveF(); render(); return; }
+  if (t.closest("#zoneclear")){ S.f.zone.clear(); saveF(); render(); return; }
   if (t.closest("#stclear")){ S.f.st.clear(); saveF(); render(); return; }
   if (t.closest("#gearclear")){ S.f.cat.clear(); S.f.kind.clear(); saveF(); render(); return; }
   if (t.closest("#cutf")){ S.f.showCut=!S.f.showCut; saveF(); render(); return; }
@@ -692,6 +713,7 @@ document.addEventListener("click", e => {
 document.addEventListener("change", e => {
   const t = e.target;
   if (t.matches("[data-status-for]")){ setStatus(t.dataset.statusFor, t.value); return; }
+  if (t.matches("[data-zone-for]")){ setZone(t.dataset.zoneFor, t.value.trim()); delete S.drafts[t.id]; return; }
   if (t.id==="workf"){ S.f.work=t.value; saveF(); render(); return; }
   if (t.id==="srcf"){ S.f.src=t.value; saveF(); render(); return; }
   if (t.matches("[data-edit]")){
