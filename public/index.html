@@ -212,6 +212,16 @@ dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .zonetag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--link);background:var(--link-soft);border-radius:4px;padding:2px 7px;margin-bottom:-2px}
 .areafield{margin-top:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
 .areafield input{border:1px solid var(--rule);background:var(--paper);border-radius:7px;padding:6px 10px;width:200px;max-width:100%}
+.list-head{display:grid;grid-template-columns:28px minmax(0,2.3fr) minmax(0,1.7fr) 120px 34px 118px 44px;gap:12px;padding:8px 12px 8px 16px;border-bottom:1px solid var(--rule);background:var(--paper-2);font-size:11px;align-items:center}
+.list-head>span{display:flex;align-items:center;gap:4px;min-width:0}
+.lh-r{justify-content:flex-end}
+.lh-plain,.lh-sep{color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.sortbtn{border:0;background:none;padding:2px 0;cursor:pointer;font:inherit;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.sortbtn .arr{font-size:11px;opacity:.35}
+.sortbtn:hover{color:var(--ink)} .sortbtn:hover .arr{opacity:.8}
+.sortbtn.on{color:var(--link)} .sortbtn.on .arr{opacity:1}
+.sort-sel{display:none}
+@media (max-width:820px){.list-head{display:none}.sort-sel{display:block}}
 /* ---- cleanup layer ---- */
 .wrap{max-width:1160px}
 .brand b{font-size:17px}
@@ -370,15 +380,15 @@ const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-li
 
 const S = { items: new Map(), works: new Map(), loadedI:false, loadedW:false, db:null, user:null, me:null, ro:false,
   open: new Set(), drafts: {}, route: "gear",
-  f: { q:"", st: new Set(), src:"", showCut:true, cat: new Set(), kind: new Set(), work:"", zone: new Set() } };
+  f: { q:"", st: new Set(), src:"", showCut:true, cat: new Set(), kind: new Set(), work:"", zone: new Set(), sort:null } };
 
 const ls = {
   get(k,d){ try{ const v = localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 const saved = ls.get("www-inv-filters", null);
-if (saved){ S.f.q = saved.q||""; S.f.st = new Set(saved.st||[]); S.f.src = saved.src||""; S.f.showCut = saved.showCut!==false; S.f.cat = new Set(saved.cat||[]); S.f.kind = new Set(saved.kind||[]); S.f.work = saved.work||""; S.f.zone = new Set(saved.zone||[]); }
-const saveF = () => ls.set("www-inv-filters", {q:S.f.q, st:[...S.f.st], src:S.f.src, showCut:S.f.showCut, cat:[...S.f.cat], kind:[...S.f.kind], work:S.f.work, zone:[...S.f.zone]});
+if (saved){ S.f.q = saved.q||""; S.f.st = new Set(saved.st||[]); S.f.src = saved.src||""; S.f.showCut = saved.showCut!==false; S.f.cat = new Set(saved.cat||[]); S.f.kind = new Set(saved.kind||[]); S.f.work = saved.work||""; S.f.zone = new Set(saved.zone||[]); S.f.sort = saved.sort||null; }
+const saveF = () => ls.set("www-inv-filters", {q:S.f.q, st:[...S.f.st], src:S.f.src, showCut:S.f.showCut, cat:[...S.f.cat], kind:[...S.f.kind], work:S.f.work, zone:[...S.f.zone], sort:S.f.sort});
 
 const $ = (s, r=document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -489,6 +499,7 @@ function renderFilters(){
   return `<div class="toolbar">
     <input class="search" id="q" type="search" placeholder="Search items, artworks, artists, notes" value="${esc(S.f.q)}" aria-label="Search">
     ${artistSelect()}
+    ${sortSelect()}
     <select class="sel ${S.f.src?"on":""}" id="srcf" aria-label="Filter by source"><option value="">All sources</option>${SOURCES.map(([k,l])=>`<option value="${k}" ${S.f.src===k?"selected":""}>${l}</option>`).join("")}</select>
     <button type="button" class="toggle" id="cutf" aria-pressed="${!S.f.showCut}"><span class="sw" aria-hidden="true"></span>Hide not needed <span class="c">${c.cut}</span></button>
   </div>
@@ -550,6 +561,42 @@ function renderSummary(){
       <div class="stat"><span class="eyebrow">Est. cost</span><span class="big num">${money(cost)}</span><span class="note-s">of $4,000 budget</span></div>
     </div>
   </section>`;
+}
+
+/* ---------- sorting ---------- */
+const SORTS = {
+  name:   ["Item",        i => i.name],
+  work:   ["Artwork",     i => workOf(i).title],
+  artist: ["Artist",      i => workOf(i).artist],
+  source: ["Coming from", i => SRC[i.source] || i.source],
+  qty:    ["Qty",         i => Number(i.qty) || 1],
+  status: ["Status",      i => STATUSES.findIndex(x => x[0] === i.status)],
+};
+function sortRows(rows){
+  const srt = S.f.sort; if (!srt || !SORTS[srt.key]) return rows;
+  const f = SORTS[srt.key][1], dir = srt.dir === "desc" ? -1 : 1;
+  return rows.slice().sort((a,b) => {
+    const x = f(a), y = f(b);
+    const c = typeof x === "number" ? x - y : String(x||"").replace(/^[„"“']+/,"").localeCompare(String(y||"").replace(/^[„"“']+/,""), undefined, {numeric:true, sensitivity:"base"});
+    return c ? c*dir : (a.order??0) - (b.order??0);
+  });
+}
+function sortBtn(key){
+  const on = S.f.sort && S.f.sort.key === key, dir = on ? S.f.sort.dir : null;
+  return `<button type="button" class="sortbtn ${on?"on":""}" data-sort="${key}" aria-label="Sort by ${SORTS[key][0]}${on?(dir==="asc"?", currently A to Z":", currently Z to A"):""}">${SORTS[key][0]}<span class="arr" aria-hidden="true">${on?(dir==="asc"?"↑":"↓"):"↕"}</span></button>`;
+}
+function listHTML(rows, opts={}){
+  const head = `<div class="list-head" role="row">
+    <span></span><span>${sortBtn("name")}</span>
+    <span>${opts.hideWork ? '<span class="lh-plain">Category</span>' : `${sortBtn("work")}<span class="lh-sep">/</span>${sortBtn("artist")}`}</span>
+    <span>${sortBtn("source")}</span><span class="lh-r">${sortBtn("qty")}</span><span>${sortBtn("status")}</span><span></span>
+  </div>`;
+  return `<div class="list">${head}${sortRows(rows).map(i=>rowHTML(i,opts)).join("")}</div>`;
+}
+function sortSelect(){
+  const v = S.f.sort ? `${S.f.sort.key}:${S.f.sort.dir}` : "";
+  const opts = [["","Sheet order"],["name:asc","Item A–Z"],["work:asc","Artwork A–Z"],["artist:asc","Artist A–Z"],["source:asc","Coming from A–Z"],["status:asc","Status: needs source first"],["status:desc","Status: installed first"],["qty:desc","Qty, most first"]];
+  return `<select class="sel sort-sel ${v?"on":""}" id="sortf" aria-label="Sort items">${opts.map(([k,l])=>`<option value="${k}" ${v===k?"selected":""}>${l}</option>`).join("")}</select>`;
 }
 
 const CHEVRON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
@@ -628,7 +675,7 @@ function renderGear(){
     const here = units(live.filter(i=>i.status==="onsite"||i.status==="installed"));
     const extra = k==="cover" ? ` · ${live.reduce((s,i)=>s+(Number(i.ft)||0),0)} ft specced` : "";
     return `<section class="sec"><div class="sec-h"><h2>${l}</h2><span class="meta num">${units(live)} units · ${here} in gallery · ${live.filter(i=>i.status==="open").length} need a source${extra}</span><div class="mini">${miniBar(inCat)}</div></div>
-      <div class="list">${rows.map(i=>rowHTML(i)).join("")}</div></section>`;
+      ${listHTML(rows)}</section>`;
   }).join("");
   const wsel = S.f.work && S.works.get(S.f.work);
   const jump = wsel ? `<div style="margin:6px 0;font-size:13px">Showing <b>${esc(wsel.artist)}</b>'s gear · <a href="#/w/${esc(S.f.work)}" style="color:var(--link)">Open their page →</a> · <button type="button" class="btn ghost" id="workclear">Show all artists</button></div>` : "";
@@ -661,7 +708,7 @@ function renderWork(id){
   if (!w) return `<div class="crumb"><a href="#/artists">← All artworks</a></div><div class="empty">That artwork isn't in the list.</div>`;
   const its = itemsArr().filter(i=>i.work===id); const live = its.filter(i=>!i.cut); const c = statusCounts(its);
   const secs = CATS.map(([k,l])=>{ const rows = its.filter(i=>i.cat===k); if(!rows.length) return "";
-    return `<section class="sec"><div class="sec-h"><h2>${l}</h2><span class="meta num">${units(rows.filter(i=>!i.cut))} units</span></div><div class="list">${rows.map(i=>rowHTML(i,{hideWork:true})).join("")}</div></section>`; }).join("");
+    return `<section class="sec"><div class="sec-h"><h2>${l}</h2><span class="meta num">${units(rows.filter(i=>!i.cut))} units</span></div>${listHTML(rows,{hideWork:true})}</section>`; }).join("");
   return `<div class="crumb"><a href="#/artists">← All artworks</a></div>
     <div class="hero">
       <div><h1>${esc(w.title)}</h1><div class="by">${esc(w.artist)}${w.url?` · <a href="${esc(w.url)}" target="_blank" rel="noopener" style="color:var(--link)">${esc(w.url.replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}</div></div>
@@ -696,6 +743,10 @@ document.addEventListener("click", e => {
   const kf = t.closest("[data-kindf]");
   if (kf){ const k=kf.dataset.kindf; S.f.kind.has(k)?S.f.kind.delete(k):S.f.kind.add(k); saveF(); render(); return; }
   if (t.closest("#workclear")){ S.f.work=""; saveF(); render(); return; }
+  const sb = t.closest("[data-sort]");
+  if (sb){ const k = sb.dataset.sort, cur = S.f.sort;
+    S.f.sort = !cur || cur.key !== k ? {key:k, dir:"asc"} : cur.dir === "asc" ? {key:k, dir:"desc"} : null;
+    saveF(); render(); return; }
   const zf = t.closest("[data-zonef]");
   if (zf){ const k=zf.dataset.zonef; S.f.zone.has(k)?S.f.zone.delete(k):S.f.zone.add(k); saveF(); render(); return; }
   if (t.closest("#zoneclear")){ S.f.zone.clear(); saveF(); render(); return; }
@@ -714,6 +765,7 @@ document.addEventListener("change", e => {
   const t = e.target;
   if (t.matches("[data-status-for]")){ setStatus(t.dataset.statusFor, t.value); return; }
   if (t.matches("[data-zone-for]")){ setZone(t.dataset.zoneFor, t.value.trim()); delete S.drafts[t.id]; return; }
+  if (t.id==="sortf"){ const [k,d] = t.value.split(":"); S.f.sort = k ? {key:k, dir:d} : null; saveF(); render(); return; }
   if (t.id==="workf"){ S.f.work=t.value; saveF(); render(); return; }
   if (t.id==="srcf"){ S.f.src=t.value; saveF(); render(); return; }
   if (t.matches("[data-edit]")){
