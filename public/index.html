@@ -211,7 +211,17 @@ dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .chip.zone[aria-pressed="false"]{border-color:color-mix(in srgb,var(--link) 40%,var(--rule));color:var(--link)}
 .zonetag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--link);background:var(--link-soft);border-radius:4px;padding:2px 7px;margin-bottom:-2px}
 .areafield{margin-top:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
-.areafield input{border:1px solid var(--rule);background:var(--paper);border-radius:7px;padding:6px 10px;width:200px;max-width:100%}
+.areafield{flex-wrap:wrap;gap:6px}
+.areafield>span{margin-right:6px;font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+.seg{height:30px;padding:0 12px;border:1px solid var(--rule);background:var(--paper);border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink)}
+.seg:hover{border-color:var(--faint)}
+.seg.on{background:var(--link);border-color:var(--link);color:#fff}
+.card{cursor:pointer}
+.card .t a{color:inherit;text-decoration:none}
+.card .t a:hover{text-decoration:underline}
+.card-area{display:flex;align-items:center;gap:8px;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:2px;font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--muted)}
+.area-sel{flex:1;min-width:0;height:30px;border:1px solid var(--rule);border-radius:7px;background:var(--paper);padding:0 8px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted);cursor:pointer}
+.area-sel.set{color:var(--link);border-color:color-mix(in srgb,var(--link) 45%,var(--rule));background:var(--link-soft)}
 .list-head{display:grid;grid-template-columns:28px minmax(0,2.3fr) minmax(0,1.7fr) 120px 34px 118px 44px;gap:12px;padding:8px 12px 8px 16px;border-bottom:1px solid var(--rule);background:var(--paper-2);font-size:11px;align-items:center}
 .list-head>span{display:flex;align-items:center;gap:4px;min-width:0}
 .lh-r{justify-content:flex-end}
@@ -515,13 +525,19 @@ function artistSelect(){
   return `<select class="sel artist-sel ${S.f.work?"on":""}" id="workf" aria-label="Filter by artist"><option value="">All artists</option>${ws.map(w=>`<option value="${w.id}" ${S.f.work===w.id?"selected":""}>${esc(w.artist)} — ${esc(w.title)}</option>`).join("")}</select>`;
 }
 
+const AREAS = ["Gallery 1", "Gallery 2", "LAN Party"];
+function areaList(){
+  const extra = [...new Set(worksArr().map(w=>w.zone).filter(z=>z && !AREAS.includes(z)))].sort();
+  return [...AREAS, ...extra];
+}
+function areaSelect(id, cur){
+  return `<select class="area-sel ${cur?"set":""}" data-zone-for="${esc(id)}" aria-label="Area" ${S.ro?"disabled":""}><option value="">No area</option>${areaList().map(z=>`<option value="${esc(z)}" ${cur===z?"selected":""}>${esc(z)}</option>`).join("")}</select>`;
+}
 function zoneFilters(){
   const ws = worksArr().filter(w=>w.id!=="w99");
   const m = {}; ws.forEach(w=>{ const z=w.zone||""; m[z]=(m[z]||0)+1; });
-  const zones = Object.keys(m).filter(Boolean).sort();
-  if (!zones.length) return "";
-  if (m[""]) zones.push("");
-  return `<div class="facets"><span class="flabel">Area</span>${zones.map(z=>`<button type="button" class="chip ${z?"zone":""}" data-zonef="${esc(z)}" aria-pressed="${S.f.zone.has(z)}">${z?esc(z):"No area"}<span class="c">${m[z]} ${m[z]===1?"artist":"artists"}</span></button>`).join("")}${S.f.zone.size?`<button type="button" class="linkbtn" id="zoneclear">Clear</button>`:""}</div>`;
+  const zones = [...areaList(), ""];
+  return `<div class="facets"><span class="flabel">Area</span>${zones.map(z=>{ const n=m[z]||0; return `<button type="button" class="chip ${z?"zone":""}" data-zonef="${esc(z)}" aria-pressed="${S.f.zone.has(z)}">${z?esc(z):"No area"}<span class="c">${n}</span></button>`; }).join("")}${S.f.zone.size?`<button type="button" class="linkbtn" id="zoneclear">Clear</button>`:""}</div>`;
 }
 
 function gearFilters(){
@@ -692,12 +708,13 @@ function renderArtists(){
     const gear = live.filter(i=> gearOn ? gearHit(i) : (i.cat==="display"||i.cat==="computer")).map(i=>`<span>${(Number(i.qty)||1)>1?i.qty+"× ":""}${esc(i.kind||i.name)}</span>`).join("");
     const openNotes = [...its, w].reduce((s,d)=>s+(d.notes||[]).filter(n=>!n.done).length,0);
     const state = c.open ? `<b class="warn">${c.open} need a source</b>` : c.installed===live.length && live.length ? `<b class="ok">All installed</b>` : `<span>${c.onsite+c.installed}/${live.length} in gallery</span>`;
-    return `<a class="card" href="#/w/${esc(w.id)}">
-      ${w.zone?`<span class="zonetag">${esc(w.zone)}</span>`:""}<div class="t">${esc(w.title)}</div><div class="a">${esc(w.artist)}</div>
+    return `<div class="card" data-href="#/w/${esc(w.id)}">
+      <div class="t"><a href="#/w/${esc(w.id)}">${esc(w.title)}</a></div><div class="a">${esc(w.artist)}</div>
       <div class="gear">${gear || '<span style="border:0;background:none;color:var(--faint)">No screen or computer</span>'}</div>
       ${miniBar(its)}
       <div class="foot">${state}<span class="num">${live.length} items${openNotes?` · ✎ ${openNotes}`:""}</span></div>
-    </a>`;
+      ${w.id==="w99" ? "" : `<div class="card-area"><span>Area</span>${areaSelect(w.id, w.zone||"")}</div>`}
+    </div>`;
   }).join("");
   return `<div class="filters"><input class="search" id="q" type="search" placeholder="Find an artwork or artist" value="${esc(S.f.q)}" aria-label="Search">${artistSelect()}</div>${zoneFilters()}${gearFilters()}
     <div class="grid">${cards || '<div class="empty">No artworks match.</div>'}</div>`;
@@ -718,7 +735,7 @@ function renderWork(id){
         ${w.budget!=null?`<div><b>${money(w.budget)}</b>budget</div>`:""}
       </div>
     </div>
-    <div class="areafield"><label for="zone-edit">Area</label><input id="zone-edit" data-draft data-zone-for="${esc(id)}" list="zone-list" value="${esc(w.zone||"")}" placeholder="e.g. LAN Party" ${S.ro?"disabled":""}><datalist id="zone-list">${[...new Set(worksArr().map(x=>x.zone).filter(Boolean))].sort().map(z=>`<option value="${esc(z)}">`).join("")}</datalist></div>
+    ${id==="w99" ? "" : `<div class="areafield" role="group" aria-label="Area"><span>Area</span>${["", ...areaList()].map(z=>`<button type="button" class="seg ${(w.zone||"")===z?"on":""}" data-setzone="${esc(id)}|${esc(z)}" aria-pressed="${(w.zone||"")===z}" ${S.ro?"disabled":""}>${z?esc(z):"None"}</button>`).join("")}</div>`}
     <div style="margin-top:16px">${miniBar(its)}</div>
     <div style="margin-top:14px"><button class="btn" type="button" id="add-here" data-work="${esc(id)}">+ Add item to this artwork</button></div>
     ${secs || '<div class="empty">No items yet.</div>'}
@@ -747,6 +764,10 @@ document.addEventListener("click", e => {
   if (sb){ const k = sb.dataset.sort, cur = S.f.sort;
     S.f.sort = !cur || cur.key !== k ? {key:k, dir:"asc"} : cur.dir === "asc" ? {key:k, dir:"desc"} : null;
     saveF(); render(); return; }
+  const sz = t.closest("[data-setzone]");
+  if (sz){ const i = sz.dataset.setzone.indexOf("|"); setZone(sz.dataset.setzone.slice(0,i), sz.dataset.setzone.slice(i+1)); return; }
+  const card = t.closest(".card[data-href]");
+  if (card && !t.closest("a,select,button,label")){ location.hash = card.dataset.href; return; }
   const zf = t.closest("[data-zonef]");
   if (zf){ const k=zf.dataset.zonef; S.f.zone.has(k)?S.f.zone.delete(k):S.f.zone.add(k); saveF(); render(); return; }
   if (t.closest("#zoneclear")){ S.f.zone.clear(); saveF(); render(); return; }
