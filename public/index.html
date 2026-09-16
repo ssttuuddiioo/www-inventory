@@ -452,7 +452,7 @@ function toggleNote(col, id, idx){
 }
 
 /* ---------- derived ---------- */
-const itemsArr = () => [...S.items.entries()].map(([id,d])=>({id,...d})).sort((a,b)=>(a.order??1e9)-(b.order??1e9));
+const itemsArr = () => [...S.items.entries()].filter(([,d])=>!d.removed).map(([id,d])=>({id,...d})).sort((a,b)=>(a.order??1e9)-(b.order??1e9));
 const worksArr = () => [...S.works.entries()].map(([id,d])=>({id,...d})).sort((a,b)=>(a.order??1e9)-(b.order??1e9));
 const workOf = it => S.works.get(it.work) || {title:"Unassigned", artist:""};
 function matches(it){
