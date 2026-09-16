@@ -14,7 +14,7 @@ A static page (`public/index.html`) plus one Vercel function (`api/config.js`), 
 
 ## Setup
 
-1. In the Supabase SQL editor, run `supabase/schema.sql`, then `supabase/seed.sql`.
+1. Apply `supabase/migrations/20260916120000_wwwinv.sql` to the project (it is shared with other apps, so use `supabase db query --linked -f <file>` rather than `db push`).
 2. In Vercel, set the environment variables `SUPABASE_URL` and `SUPABASE_ANON_KEY`, then redeploy.
 
 Tables and functions are prefixed `wwwinv_` so they can live in a shared Supabase project.
