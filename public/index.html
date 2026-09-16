@@ -15,6 +15,7 @@
   --link:#1A3BD6; --link-soft:#E6EAFB;
   --open:#C4402B; --open-bg:#FBE9E5;
   --assigned:#9A6A06; --assigned-bg:#FBF1DA;
+  --transit:#6A4CC4; --transit-bg:#EEEAFB;
   --onsite:#0B7480; --onsite-bg:#DDF1F2;
   --installed:#2C7F3A; --installed-bg:#E1F2E3;
   --cut:#9A9EA4; --cut-bg:#EEEFEE;
@@ -27,7 +28,7 @@
     --ground:#111316; --paper:#181B1F; --paper-2:#1D2025; --ink:#ECEEF0; --muted:#A1A6AD; --faint:#7A7F87;
     --rule:#2E3238; --rule-2:#25282D;
     --link:#8FA6FF; --link-soft:#1E2747;
-    --open:#FF8A74; --open-bg:#3A1F1A; --assigned:#E8B64C; --assigned-bg:#352A12;
+    --open:#FF8A74; --open-bg:#3A1F1A; --assigned:#E8B64C; --assigned-bg:#352A12; --transit:#B6A4FF; --transit-bg:#2A2446;
     --onsite:#5CCBD6; --onsite-bg:#123236; --installed:#79D089; --installed-bg:#16301B;
     --cut:#6E737A; --cut-bg:#22252A; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.3);
   }
@@ -36,7 +37,7 @@
   --ground:#111316; --paper:#181B1F; --paper-2:#1D2025; --ink:#ECEEF0; --muted:#A1A6AD; --faint:#7A7F87;
   --rule:#2E3238; --rule-2:#25282D;
   --link:#8FA6FF; --link-soft:#1E2747;
-  --open:#FF8A74; --open-bg:#3A1F1A; --assigned:#E8B64C; --assigned-bg:#352A12;
+  --open:#FF8A74; --open-bg:#3A1F1A; --assigned:#E8B64C; --assigned-bg:#352A12; --transit:#B6A4FF; --transit-bg:#2A2446;
   --onsite:#5CCBD6; --onsite-bg:#123236; --installed:#79D089; --installed-bg:#16301B;
   --cut:#6E737A; --cut-bg:#22252A; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.3);
 }
@@ -134,6 +135,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .notes-n.has{color:var(--ink)}
 .row[data-status="open"]{--st:var(--open);--stbg:var(--open-bg)}
 .row[data-status="assigned"]{--st:var(--assigned);--stbg:var(--assigned-bg)}
+.row[data-status="transit"]{--st:var(--transit);--stbg:var(--transit-bg)}
 .row[data-status="onsite"]{--st:var(--onsite);--stbg:var(--onsite-bg)}
 .row[data-status="installed"]{--st:var(--installed);--stbg:var(--installed-bg)}
 .row.cut{--st:var(--cut);--stbg:var(--cut-bg)}
@@ -382,7 +384,7 @@ const CATS = [
   ["cover","Cable covers"],["light","Lighting"],["supplies","Supplies & contingency"]
 ];
 const CAT = Object.fromEntries(CATS);
-const STATUSES = [["open","Needs source"],["assigned","Source set"],["onsite","In gallery"],["installed","Installed"]];
+const STATUSES = [["open","Needs source"],["assigned","Source set"],["transit","On its way"],["onsite","In gallery"],["installed","Installed"]];
 const ST = Object.fromEntries(STATUSES);
 const SOURCES = [["gallery","Projekt Blank"],["rhizome","Rhizome"],["onx","ONX"],["loan","Artist loan"],["buy","To buy"],["tbd","No source yet"]];
 const SRC = Object.fromEntries(SOURCES);
@@ -469,7 +471,7 @@ function matches(it){
   return true;
 }
 const units = arr => arr.reduce((s,i)=>s+(Number(i.qty)||1),0);
-function statusCounts(arr){ const c={open:0,assigned:0,onsite:0,installed:0,cut:0}; arr.forEach(i=> i.cut? c.cut++ : c[i.status]=(c[i.status]||0)+1); return c; }
+function statusCounts(arr){ const c={open:0,assigned:0,transit:0,onsite:0,installed:0,cut:0}; arr.forEach(i=> i.cut? c.cut++ : c[i.status]=(c[i.status]||0)+1); return c; }
 function miniBar(arr){
   const c = statusCounts(arr), live = arr.length - c.cut || 1;
   return `<div class="bar" role="img" aria-label="${STATUSES.map(([k,l])=>`${c[k]} ${l}`).join(", ")}">${STATUSES.map(([k])=>`<i style="width:${c[k]/live*100}%;background:var(--${k})"></i>`).join("")}</div>`;
