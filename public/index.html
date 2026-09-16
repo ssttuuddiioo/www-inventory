@@ -207,6 +207,107 @@ dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .notice{margin-top:18px;padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--muted)}
 .ro .check,.ro .status,.ro .tick{pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.row,.card{transition:background .15s,border-color .15s}}
+
+/* ---- cleanup layer ---- */
+.wrap{max-width:1160px}
+.brand b{font-size:17px}
+.brand span{margin-top:2px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+
+.overview{margin-top:20px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.ov-progress{padding:16px 20px 14px;border-bottom:1px solid var(--rule-2)}
+.ov-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+.ov-count{font-size:13px;color:var(--muted)} .ov-count b{color:var(--ink);font-weight:500}
+.overview .bar{height:8px;border-radius:99px}
+.overview .legend{margin-top:10px;font-size:12.5px;color:var(--muted);gap:4px 18px}
+.overview .legend b{color:var(--ink);font-weight:500}
+.overview .legend .dot{border-radius:50%;width:8px;height:8px}
+.ov-stats{display:grid;grid-template-columns:1.4fr 1.4fr 1fr 1fr}
+.stat{padding:14px 20px 16px;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--rule-2);min-width:0}
+.stat:first-child{border-left:0}
+.stat .big{font-size:28px;font-weight:500;margin-top:6px;letter-spacing:-.02em}
+.stat .big small{font-size:14px;color:var(--muted)}
+.note-s{font-size:12px;color:var(--muted)}
+.kinds{display:flex;flex-wrap:wrap;gap:3px 12px;margin:8px 0 4px;font-size:12.5px;color:var(--muted)}
+.kinds b{color:var(--ink);font-weight:500}
+@media (max-width:860px){.ov-stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--rule-2)}}
+@media (max-width:480px){.ov-stats{grid-template-columns:1fr}.stat{border-left:0;border-top:1px solid var(--rule-2)}.stat:first-child{border-top:0}}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0 10px}
+.toolbar .search{flex:1 1 260px}
+.search,.sel{height:36px}
+.sel{padding:0 28px 0 10px;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 16px,calc(100% - 10px) 16px;background-size:5px 5px;background-repeat:no-repeat}
+.artist-sel{max-width:260px}
+.toggle{height:36px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--paper);border-radius:7px;padding:0 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.toggle .sw{width:26px;height:16px;border-radius:99px;background:var(--rule);position:relative;transition:background .15s}
+.toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--paper);transition:transform .15s}
+.toggle[aria-pressed="true"]{color:var(--ink)}
+.toggle[aria-pressed="true"] .sw{background:var(--ink)}
+.toggle[aria-pressed="true"] .sw::after{transform:translateX(10px)}
+.toggle .c{font-family:var(--mono);font-weight:500;color:var(--faint)}
+.facets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0}
+.facets + .facets{border-top:1px dashed var(--rule)}
+.facets.sub{padding-left:0}
+.flabel{width:54px;flex:none;font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+@media (max-width:560px){.flabel{width:100%}}
+.chip{height:28px;padding:0 10px;font-size:12.5px;background:transparent;border-color:var(--rule);color:var(--ink);font-weight:500}
+.chip:hover{border-color:var(--faint)}
+.chip .c{font-size:11.5px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip[aria-pressed="true"] .c{color:var(--paper);opacity:.65}
+.linkbtn{border:0;background:none;color:var(--link);font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 6px}
+.linkbtn:hover{text-decoration:underline}
+
+.sec{margin-top:34px}
+.sec-h{border-bottom:0;padding:0 2px 10px;align-items:center}
+.sec-h h2{font-size:19px}
+.sec-h .meta{font-family:var(--sans);font-size:12.5px}
+.sec-h .mini .bar{height:6px;border-radius:99px}
+.list{border-top:1px solid var(--rule);border-radius:10px;overflow:hidden}
+
+.row::before{display:none}
+.row-main{grid-template-columns:28px minmax(0,2.3fr) minmax(0,1.7fr) 120px 34px 118px 44px;gap:12px;padding:10px 12px 10px 16px}
+.row.open{background:var(--paper-2)}
+.row.open .row-main:hover{background:transparent}
+.check{width:20px;height:20px;border-width:1.5px;border-color:var(--rule);border-radius:5px}
+.row-main:hover .check{border-color:var(--faint)}
+.nm{font-weight:500}
+.nm .kind{font-size:10.5px;border:0;background:var(--paper-2);padding:2px 6px;color:var(--muted)}
+.row.open .nm .kind{background:var(--paper)}
+.work{font-size:13px}
+.work a{text-decoration-color:color-mix(in srgb,var(--link) 35%,transparent)}
+.work a:hover{text-decoration-color:var(--link)}
+.work small{font-size:12px}
+.srctxt{font-size:12.5px;color:var(--ink)}
+.srctxt.tbd,.srctxt.buy{color:var(--open);font-weight:600}
+.qty{color:var(--muted);font-size:12.5px}
+.status{padding:5px 10px;font-size:11.5px;font-weight:600;letter-spacing:.01em}
+.expand{display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;border:0;background:none;color:var(--faint);cursor:pointer;padding:4px;justify-self:end}
+.expand:hover{color:var(--ink)}
+.expand svg{transition:transform .15s}
+.row.open .expand svg{transform:rotate(180deg);color:var(--ink)}
+.ncount{font-family:var(--mono);font-size:11px;min-width:18px;height:18px;border-radius:99px;display:inline-grid;place-items:center;padding:0 5px;background:var(--rule-2);color:var(--muted)}
+.ncount.has{background:var(--ink);color:var(--paper)}
+.row.cut .status{opacity:.5}
+.detail{padding:2px 16px 18px 56px}
+.detail h4{font-size:11px;letter-spacing:.09em}
+.meta-line .srctxt{font-size:12.5px}
+@media (max-width:820px){
+  .row-main{grid-template-columns:28px minmax(0,1fr) 112px 28px;grid-template-areas:"c n s e" "c w w w" "c r r r";row-gap:4px}
+  .row-main>.expand{grid-area:e;align-self:start}
+  .row-main>.notes-n{display:none}
+}
+.meta-line{gap:12px}
+
+.grid{gap:14px}
+.card{border-radius:12px;padding:16px 18px;gap:10px}
+.card .t{font-size:15.5px}
+.card .gear span{border:0}
+.card .bar{height:6px;border-radius:99px}
+.hero h1{text-decoration:none;color:var(--ink)}
+.hero .by{font-size:16px}
+.hero .facts b{font-size:20px}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -377,12 +478,15 @@ function render(){
 
 function renderFilters(){
   const all = itemsArr(); const c = statusCounts(all);
-  return `<div class="filters">
+  return `<div class="toolbar">
     <input class="search" id="q" type="search" placeholder="Search items, artworks, artists, notes" value="${esc(S.f.q)}" aria-label="Search">
-    ${STATUSES.map(([k,l])=>`<button type="button" class="chip" data-stf="${k}" aria-pressed="${S.f.st.has(k)}"><span class="dot" style="background:var(--${k})"></span>${l}<span class="c">${c[k]}</span></button>`).join("")}
     ${artistSelect()}
-    <select class="sel" id="srcf" aria-label="Filter by source"><option value="">All sources</option>${SOURCES.map(([k,l])=>`<option value="${k}" ${S.f.src===k?"selected":""}>${l}</option>`).join("")}</select>
-    <button type="button" class="chip" id="cutf" aria-pressed="${!S.f.showCut}">Hide not needed<span class="c">${c.cut}</span></button>
+    <select class="sel ${S.f.src?"on":""}" id="srcf" aria-label="Filter by source"><option value="">All sources</option>${SOURCES.map(([k,l])=>`<option value="${k}" ${S.f.src===k?"selected":""}>${l}</option>`).join("")}</select>
+    <button type="button" class="toggle" id="cutf" aria-pressed="${!S.f.showCut}"><span class="sw" aria-hidden="true"></span>Hide not needed <span class="c">${c.cut}</span></button>
+  </div>
+  <div class="facets"><span class="flabel">Status</span>
+    ${STATUSES.map(([k,l])=>`<button type="button" class="chip" data-stf="${k}" aria-pressed="${S.f.st.has(k)}"><span class="dot" style="background:var(--${k})"></span>${l}<span class="c">${c[k]}</span></button>`).join("")}
+    ${S.f.st.size?`<button type="button" class="linkbtn" id="stclear">Clear</button>`:""}
   </div>${gearFilters()}`;
 }
 
@@ -394,51 +498,44 @@ function artistSelect(){
 
 function gearFilters(){
   const all = itemsArr().filter(i=>!i.cut);
-  const catChips = CATS.filter(([k])=>all.some(i=>i.cat===k)).map(([k,l])=>`<button type="button" class="chip gchip" data-catf="${k}" aria-pressed="${S.f.cat.has(k)}">${l}<span class="c">${units(all.filter(i=>i.cat===k))}</span></button>`).join("");
+  const catChips = CATS.filter(([k])=>all.some(i=>i.cat===k)).map(([k,l])=>`<button type="button" class="chip" data-catf="${k}" aria-pressed="${S.f.cat.has(k)}">${l}<span class="c">${units(all.filter(i=>i.cat===k))}</span></button>`).join("");
   let kindChips = "";
   if (S.f.cat.size){
     const m = {}; all.filter(i=>S.f.cat.has(i.cat)).forEach(i=>{ const k=i.kind||"Other"; m[k]=(m[k]||0)+(Number(i.qty)||1); });
     const kinds = Object.entries(m).sort((a,b)=>b[1]-a[1]);
     if (kinds.length > 1 || (kinds[0] && kinds[0][0] !== "Other"))
-      kindChips = `<div class="filters gear-row"><span class="flabel">Type</span>${kinds.map(([k,n])=>`<button type="button" class="chip gchip" data-kindf="${esc(k)}" aria-pressed="${S.f.kind.has(k)}">${esc(k)}<span class="c">${n}</span></button>`).join("")}</div>`;
+      kindChips = `<div class="facets sub"><span class="flabel">Type</span>${kinds.map(([k,n])=>`<button type="button" class="chip" data-kindf="${esc(k)}" aria-pressed="${S.f.kind.has(k)}">${esc(k)}<span class="c">${n}</span></button>`).join("")}</div>`;
   }
   const any = S.f.cat.size || S.f.kind.size;
-  return `<div class="filters gear-row"><span class="flabel">Gear</span>${catChips}${any?`<button type="button" class="btn ghost" id="gearclear">Show all gear</button>`:""}</div>${kindChips}`;
+  return `<div class="facets"><span class="flabel">Gear</span>${catChips}${any?`<button type="button" class="linkbtn" id="gearclear">Clear</button>`:""}</div>${kindChips}`;
 }
 
 function renderSummary(){
   const all = itemsArr().filter(i=>!i.cut);
   const c = statusCounts(itemsArr());
   const total = all.length || 1;
+  const here = arr => units(arr.filter(i=>i.status==="onsite"||i.status==="installed"));
   const byKind = (cat) => { const m={}; all.filter(i=>i.cat===cat).forEach(i=>{ const k=i.kind||"Other"; m[k]=(m[k]||0)+(Number(i.qty)||1); }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
+  const kinds = cat => byKind(cat).map(([k,n])=>`<span><b class="num">${n}</b> ${esc(k)}</span>`).join("");
   const disp = all.filter(i=>i.cat==="display"), comp = all.filter(i=>i.cat==="computer");
-  const dispHere = units(disp.filter(i=>i.status==="onsite"||i.status==="installed"));
-  const compHere = units(comp.filter(i=>i.status==="onsite"||i.status==="installed"));
   const ft = all.filter(i=>i.cat==="cover").reduce((s,i)=>s+(Number(i.ft)||0),0);
   const cost = all.reduce((s,i)=>s+(Number(i.cost)||0)*(Number(i.qty)||1),0);
-  return `<section class="summary" aria-label="Summary">
-    <div class="panel">
-      <h3><span>Install progress</span><span class="num">${c.installed}/${total} installed</span></h3>
-      <div class="bar" style="height:16px">${STATUSES.map(([k])=>`<i style="width:${c[k]/total*100}%;background:var(--${k})"></i>`).join("")}</div>
-      <div class="legend">${STATUSES.map(([k,l])=>`<span><i class="dot" style="background:var(--${k})"></i>${l} <b class="num">${c[k]}</b></span>`).join("")}${c.cut?`<span style="color:var(--muted)">Not needed <b class="num">${c.cut}</b></span>`:""}</div>
-      <div class="statline" style="margin-top:14px">
-        <div><span class="big num">${ft}</span><small>ft of cable cover in item specs</small></div>
-        <div><span class="big num">${money(cost)}</span><small>est. cost of listed items · budget $4,000</small></div>
-      </div>
+  return `<section class="overview" aria-label="Summary">
+    <div class="ov-progress">
+      <div class="ov-head"><span class="eyebrow">Install progress</span><span class="num ov-count"><b>${c.installed}</b> / ${total} installed</span></div>
+      <div class="bar">${STATUSES.map(([k])=>`<i style="width:${c[k]/total*100}%;background:var(--${k})"></i>`).join("")}</div>
+      <div class="legend">${STATUSES.map(([k,l])=>`<span><i class="dot" style="background:var(--${k})"></i>${l} <b class="num">${c[k]}</b></span>`).join("")}${c.cut?`<span class="muted">Not needed <b class="num">${c.cut}</b></span>`:""}</div>
     </div>
-    <div class="panel">
-      <h3><span>Screens</span><span class="num">${dispHere} of ${units(disp)} in gallery</span></h3>
-      <div class="big num">${units(disp)}</div>
-      <div class="kv">${byKind("display").map(([k,n])=>`<span>${esc(k)}</span><span class="num">${n}</span>`).join("")}</div>
-    </div>
-    <div class="panel">
-      <h3><span>Computers</span><span class="num">${compHere} of ${units(comp)} in gallery</span></h3>
-      <div class="big num">${units(comp)}</div>
-      <div class="kv">${byKind("computer").map(([k,n])=>`<span>${esc(k)}${k==="NUC"?' <span class="sub">(sheet numbers 8, plus 3)</span>':""}</span><span class="num">${n}</span>`).join("")}</div>
+    <div class="ov-stats">
+      <div class="stat"><span class="eyebrow">Screens</span><span class="big num">${units(disp)}</span><span class="note-s">${here(disp)} in gallery</span><div class="kinds">${kinds("display")}</div></div>
+      <div class="stat"><span class="eyebrow">Computers</span><span class="big num">${units(comp)}</span><span class="note-s">${here(comp)} in gallery</span><div class="kinds">${kinds("computer")}</div><span class="note-s">Sheet numbers 8 NUCs, plus 3 more</span></div>
+      <div class="stat"><span class="eyebrow">Cable cover</span><span class="big num">${ft}<small> ft</small></span><span class="note-s">from item specs</span></div>
+      <div class="stat"><span class="eyebrow">Est. cost</span><span class="big num">${money(cost)}</span><span class="note-s">of $4,000 budget</span></div>
     </div>
   </section>`;
 }
 
+const CHEVRON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
 function rowHTML(it, opts={}){
   const w = workOf(it);
   const open = S.open.has(it.id);
@@ -448,16 +545,18 @@ function rowHTML(it, opts={}){
   const workCell = opts.hideWork
     ? `<div class="work"><small>${esc(CAT[it.cat]||"")}</small></div>`
     : `<div class="work"><a href="#/w/${esc(it.work)}" data-stop>${esc(w.title)}</a><small>${esc(w.artist)}</small></div>`;
-  return `<div class="row ${it.cut?"cut":""}" data-status="${esc(it.status)}" data-id="${it.id}">
-    <div class="row-main" data-toggle="${it.id}" aria-expanded="${open}">
+  const showKind = it.kind && (it.cat==="display"||it.cat==="computer") && !it.name.toLowerCase().includes(it.kind.toLowerCase());
+  const src = `<span class="srctxt ${esc(it.source)}">${esc(SRC[it.source]||it.source)}</span>`;
+  return `<div class="row ${it.cut?"cut":""} ${open?"open":""}" data-status="${esc(it.status)}" data-id="${it.id}">
+    <div class="row-main" data-toggle="${it.id}">
       <button type="button" class="check" data-check="${it.id}" aria-label="${it.status==="installed"?"Mark not installed":"Mark installed"}: ${esc(it.name)}" aria-pressed="${it.status==="installed"}">${CHECK}</button>
-      <div class="nm">${q>1?`<span class="num">${q}× </span>`:""}${esc(it.name)}${it.kind && it.cat==="display"||it.kind && it.cat==="computer"?`<span class="kind">${esc(it.kind)}</span>`:""}</div>
+      <div class="nm">${esc(it.name)}${showKind?`<span class="kind">${esc(it.kind)}</span>`:""}</div>
       ${workCell}
-      <div class="src"><b class="${esc(it.source)}">${esc(SRC[it.source]||it.source)}</b></div>
-      <div class="qty ${q>1?"multi":""}">×${q}</div>
+      <div class="src">${src}</div>
+      <div class="qty num">${q>1?`×${q}`:""}</div>
       <div class="status-cell">${statusSel}</div>
-      <button type="button" class="notes-n btn ghost ${nOpen?"has":""}" data-toggle-btn="${it.id}" aria-expanded="${open}" aria-label="${open?"Close":"Open"} notes and details for ${esc(it.name)}">${nNotes?`✎ ${nOpen}${nOpen!==nNotes?`/${nNotes}`:""}`:"＋"}</button>
-      <div class="meta-line"><span class="src"><b class="${esc(it.source)}">${esc(SRC[it.source]||it.source)}</b></span>${q>1?`<span class="num">×${q}</span>`:""}${nNotes?`<span>✎ ${nOpen} note${nOpen===1?"":"s"}</span>`:""}</div>
+      <button type="button" class="expand" aria-expanded="${open}" aria-label="${open?"Close":"Open"} notes and details for ${esc(it.name)}">${nNotes?`<span class="ncount ${nOpen?"has":""}">${nOpen||"✓"}</span>`:""}${CHEVRON}</button>
+      <div class="meta-line">${src}${q>1?`<span class="num">×${q}</span>`:""}${nOpen?`<span>${nOpen} note${nOpen===1?"":"s"}</span>`:""}</div>
     </div>
     ${open ? detailHTML(it) : ""}
   </div>`;
@@ -579,6 +678,7 @@ document.addEventListener("click", e => {
   const kf = t.closest("[data-kindf]");
   if (kf){ const k=kf.dataset.kindf; S.f.kind.has(k)?S.f.kind.delete(k):S.f.kind.add(k); saveF(); render(); return; }
   if (t.closest("#workclear")){ S.f.work=""; saveF(); render(); return; }
+  if (t.closest("#stclear")){ S.f.st.clear(); saveF(); render(); return; }
   if (t.closest("#gearclear")){ S.f.cat.clear(); S.f.kind.clear(); saveF(); render(); return; }
   if (t.closest("#cutf")){ S.f.showCut=!S.f.showCut; saveF(); render(); return; }
   const note = t.closest("[data-note]");
